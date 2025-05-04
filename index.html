@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vocabulary-game</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.55.2/phaser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            margin: 0 auto;
+            width: 800px;
+            height: 600px;
+        }
+        .category-btn {
+            margin: 5px;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .category-btn:hover {
+            background-color: #45a049;
+        }
+        .category-btn.active {
+            background-color: #2E7D32;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        #category-selector {
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        h1 {
+            margin-top: 20px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>vocabulary-game</h1>
+    <div id="category-selector">
+        <button class="category-btn active" id="family">Rodzina i przyjaciele</button>
+        <button class="category-btn" id="problems">Problemy i konflikty</button>
+        <button class="category-btn" id="relationships">Związki</button>
+        <button class="category-btn" id="all">Wszystkie słówka</button>
+    </div>
+    <div id="game-container"></div>
+
+    <script>
+        // Dane słówek podzielone na kategorie
+        const vocabularyData = {
+            family: [
+                { english: "best mate", polish: "najlepszy przyjaciel" },
+                { english: "brother-in-law", polish: "szwagier" },
+                { english: "classmate", polish: "kolega/koleżanka z klasy" },
+                { english: "colleague", polish: "kolega/znajomy" },
+                { english: "daughter-in-law", polish: "synowa" },
+                { english: "father-in-law", polish: "teść" },
+                { english: "flatmate", polish: "współlokator/współlokatorka" },
+                { english: "mother-in-law", polish: "teściowa" },
+                { english: "neighbour", polish: "sąsiad/sąsiadka" },
+                { english: "nephew", polish: "bratanek/siostrzeniec" },
+                { english: "niece", polish: "bratanica/siostrzenica" },
+                { english: "only child", polish: "jedynak/jedynaczka" },
+                { english: "sister-in-law", polish: "bratowa/szwagierka" },
+                { english: "son-in-law", polish: "zięć" },
+                { english: "teammate", polish: "kolega/koleżanka z zespołu" }
+            ],
+            problems: [
+                { english: "apologise (to someone)", polish: "przeprosić (kogoś)" },
+                { english: "fall out (with someone)", polish: "pokłócić się (z kimś)" },
+                { english: "forgive (someone)", polish: "wybaczyć (komuś)" },
+                { english: "talk behind (someone's) back", polish: "obgadywać (kogoś)" },
+                { english: "upset (someone)", polish: "zdenerwować (kogoś)" }
+            ],
+            relationships: [
+                { english: "ask someone out", polish: "zaprosić kogoś na randkę" },
+                { english: "break up (with someone)", polish: "zerwać (z kimś)" },
+                { english: "bride", polish: "panna młoda" },
+                { english: "cheat on someone", polish: "zdradzać kogoś" },
+                { english: "ex-boyfriend", polish: "były chłopak" },
+                { english: "ex-girlfriend", polish: "była dziewczyna" },
+                { english: "get on well (with someone)", polish: "dobrze się dogadywać (z kimś)" },
+                { english: "go on a date", polish: "iść na randkę" },
+                { english: "go out with someone", polish: "chodzić z kimś, być z kimś w związku" },
+                { english: "groom", polish: "pan młody" },
+                { english: "honeymoon", polish: "miesiąc miodowy" },
+                { english: "stepbrother", polish: "przybrany brat" },
+                { english: "stepdad", polish: "ojczym" },
+                { english: "stepmum", polish: "macocha" },
+                { english: "stepsister", polish: "przybrana siostra" },
+                { english: "wedding", polish: "ślub, wesele" }
+            ]
+        };
+
+        // Aktualnie wybrane słówka
+        let currentVocabulary = [];
+        let currentCategory = "family";
+
+        // Konfiguracja gry
+        const config = {
+            type: Phaser.AUTO,
+            width: 800,
+            height: 600,
+            backgroundColor: '#f8f8f8',
+            parent: 'game-container',
+            scene: {
+                create: create,
+                update: update
+            }
+        };
+
+        // Inicjalizacja gry
+        let game = new Phaser.Game(config);
+        
+        // Zmienne globalne
+        let cards = [];
+        let selectedCards = [];
+        let matchedPairs = 0;
+        let totalPairs = 0;
+        let canSelect = true;
+        let scoreText;
+        let timerText;
+        let timeElapsed = 0;
+        let gameTimer;
+        let gameStartTime;
+        let bestTimeText;
+        let categoryText;
+        let bestTimes = {
+            family: localStorage.getItem('bestTime_family') || Infinity,
+            problems: localStorage.getItem('bestTime_problems') || Infinity,
+            relationships: localStorage.getItem('bestTime_relationships') || Infinity,
+            all: localStorage.getItem('bestTime_all') || Infinity
+        };
+
+        function create() {
+            // Rozpocznij grę z domyślną kategorią
+            startGame.call(this, currentCategory);
+            
+            // Podświetl aktywny przycisk kategorii
+            highlightActiveCategory(currentCategory);
+            
+            // Dodaj obsługę przycisków kategorii
+            document.getElementById('family').addEventListener('click', () => {
+                currentCategory = 'family';
+                highlightActiveCategory(currentCategory);
+                resetGame.call(this);
+                startGame.call(this, 'family');
+            });
+            
+            document.getElementById('problems').addEventListener('click', () => {
+                currentCategory = 'problems';
+                highlightActiveCategory(currentCategory);
+                resetGame.call(this);
+                startGame.call(this, 'problems');
+            });
+            
+            document.getElementById('relationships').addEventListener('click', () => {
+                currentCategory = 'relationships';
+                highlightActiveCategory(currentCategory);
+                resetGame.call(this);
+                startGame.call(this, 'relationships');
+            });
+            
+            document.getElementById('all').addEventListener('click', () => {
+                currentCategory = 'all';
+                highlightActiveCategory(currentCategory);
+                resetGame.call(this);
+                startGame.call(this, 'all');
+            });
+        }
+
+        function highlightActiveCategory(category) {
+            // Usuń klasę active ze wszystkich przycisków
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Dodaj klasę active do aktywnego przycisku
+            document.getElementById(category).classList.add('active');
+        }
+
+        function update() {
+            // Pusta funkcja - teraz używamy setTimeout do zarządzania czasem
+        }
+
+        function startGame(category) {
+            // Ustawienie aktualnej kategorii słówek
+            if (category === 'all') {
+                currentVocabulary = [
+                    ...vocabularyData.family,
+                    ...vocabularyData.problems,
+                    ...vocabularyData.relationships
+                ];
+            } else {
+                currentVocabulary = vocabularyData[category];
+            }
+            
+            // Losowe wybranie słówek (maksymalnie 8 par)
+            let selectedVocabulary = currentVocabulary.slice();
+            if (selectedVocabulary.length > 8) {
+                // Losowo wybierz 8 elementów
+                selectedVocabulary = shuffleArray(selectedVocabulary).slice(0, 8);
+            }
+            
+            // Tworzenie kart
+            createCards.call(this, selectedVocabulary);
+            
+            // Inicjalizacja licznika czasu
+            timeElapsed = 0;
+            gameStartTime = Date.now();
+            
+            // Anuluj poprzedni timer jeśli istnieje
+            if (gameTimer) {
+                clearInterval(gameTimer);
+            }
+            
+            // Ustaw nowy timer aktualizujący czas co sekundę
+            gameTimer = setInterval(() => {
+                timeElapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+                if (timerText) {
+                    timerText.setText(`Czas: ${timeElapsed} s`);
+                }
+            }, 1000);
+            
+            // Dodaj tekst wyniku
+            if (scoreText) {
+                scoreText.destroy();
+            }
+            scoreText = this.add.text(20, 20, `Pary: 0/${totalPairs}`, { 
+                fontFamily: 'Arial', 
+                fontSize: '24px', 
+                fill: '#000' 
+            });
+            
+            // Dodaj tekst czasu
+            if (timerText) {
+                timerText.destroy();
+            }
+            timerText = this.add.text(20, 50, 'Czas: 0 s', { 
+                fontFamily: 'Arial', 
+                fontSize: '24px', 
+                fill: '#000' 
+            });
+            
+            // Dodaj tekst najlepszego czasu
+            if (bestTimeText) {
+                bestTimeText.destroy();
+            }
+            
+            const bestTime = bestTimes[category];
+            bestTimeText = this.add.text(20, 80, `Najlepszy czas: ${bestTime !== "Infinity" && bestTime !== Infinity ? bestTime + ' s' : '---'}`, { 
+                fontFamily: 'Arial', 
+                fontSize: '24px', 
+                fill: '#0066cc' 
+            });
+
+            // Dodaj nazwę kategorii
+            if (categoryText) {
+                categoryText.destroy();
+            }
+            
+            let categoryName;
+            switch(category) {
+                case 'family': categoryName = 'Rodzina i przyjaciele'; break;
+                case 'problems': categoryName = 'Problemy i konflikty'; break;
+                case 'relationships': categoryName = 'Związki'; break;
+                case 'all': categoryName = 'Wszystkie słówka'; break;
+            }
+            
+            categoryText = this.add.text(config.width - 20, 20, categoryName, {
+                fontFamily: 'Arial',
+                fontSize: '20px',
+                fill: '#333'
+            });
+            categoryText.setOrigin(1, 0);
+        }
+        
+        function createCards(vocabulary) {
+            // Usuń istniejące karty
+            for (let card of cards) {
+                if (card.back) card.back.destroy();
+                if (card.text) card.text.destroy();
+                if (card.rect) card.rect.destroy();
+            }
+            cards = [];
+            selectedCards = [];
+            matchedPairs = 0;
+            
+            // Stwórz pary kart (angielskie i polskie)
+            let cardPairs = [];
+            for (let item of vocabulary) {
+                cardPairs.push({
+                    word: item.english,
+                    type: 'english',
+                    match: item.polish
+                });
+                cardPairs.push({
+                    word: item.polish,
+                    type: 'polish',
+                    match: item.english
+                });
+            }
+            
+            // Potasuj karty
+            cardPairs = shuffleArray(cardPairs);
+            totalPairs = vocabulary.length;
+            
+            // Dopasuj układ kart do liczby par
+            let cardWidth, cardHeight, cardsPerRow;
+            
+            // Dynamiczne dostosowanie rozmiaru kart
+            if (cardPairs.length <= 8) {
+                cardWidth = 180;
+                cardHeight = 100;
+                cardsPerRow = 4;
+            } else if (cardPairs.length <= 12) {
+                cardWidth = 170;
+                cardHeight = 90;
+                cardsPerRow = 4;
+            } else if (cardPairs.length <= 16) {
+                cardWidth = 160;
+                cardHeight = 85;
+                cardsPerRow = 4;
+            } else {
+                cardWidth = 150;
+                cardHeight = 80;
+                cardsPerRow = 5;
+            }
+            
+            const cardSpacingX = 10;
+            const cardSpacingY = 15;
+            const rows = Math.ceil(cardPairs.length / cardsPerRow);
+            
+            // Wyśrodkuj siatkę kart
+            const gridWidth = cardsPerRow * cardWidth + (cardsPerRow - 1) * cardSpacingX;
+            const startX = (config.width - gridWidth) / 2 + cardWidth / 2;
+            const startY = 150;
+            
+            // Stwórz karty
+            for (let i = 0; i < cardPairs.length; i++) {
+                const row = Math.floor(i / cardsPerRow);
+                const col = i % cardsPerRow;
+                const x = startX + col * (cardWidth + cardSpacingX);
+                const y = startY + row * (cardHeight + cardSpacingY);
+                
+                // Tło karty (prostokąt)
+                const cardBack = this.add.rectangle(x, y, cardWidth, cardHeight, 0x6666ff);
+                cardBack.setInteractive();
+                
+                // Biała ramka dla lepszego wyglądu
+                const cardRect = this.add.rectangle(x, y, cardWidth - 4, cardHeight - 4, 0xffffff);
+                
+                // Tekst na karcie (początkowo ukryty)
+                let fontSize = '16px';
+                if (cardPairs[i].word.length > 25) {
+                    fontSize = '14px';
+                }
+                if (cardPairs[i].word.length > 35) {
+                    fontSize = '12px';
+                }
+                
+                const cardText = this.add.text(x, y, cardPairs[i].word, {
+                    fontFamily: 'Arial',
+                    fontSize: fontSize,
+                    fill: '#000',
+                    wordWrap: { width: cardWidth - 20 },
+                    align: 'center'
+                });
+                cardText.setOrigin(0.5);
+                cardText.setVisible(false);
+                
+                // Dodaj kartę do tablicy kart
+                cards.push({
+                    back: cardBack,
+                    rect: cardRect,
+                    text: cardText,
+                    word: cardPairs[i].word,
+                    type: cardPairs[i].type,
+                    match: cardPairs[i].match,
+                    isFlipped: false,
+                    isMatched: false
+                });
+                
+                // Obsługa kliknięcia karty
+                cardBack.on('pointerdown', function() {
+                    clickCard.call(this.scene, i);
+                });
+            }
+        }
+        
+        function clickCard(index) {
+            const card = cards[index];
+            
+            // Sprawdź, czy można wybrać kartę
+            if (!canSelect || card.isFlipped || card.isMatched) {
+                return;
+            }
+            
+            // Odwróć kartę
+            flipCard(card, true);
+            
+            // Dodaj kartę do wybranych
+            selectedCards.push(card);
+            
+            // Jeśli wybrano dwie karty, sprawdź dopasowanie
+            if (selectedCards.length === 2) {
+                canSelect = false;
+                
+                const card1 = selectedCards[0];
+                const card2 = selectedCards[1];
+                
+                // Sprawdź, czy karty tworzą parę
+                if ((card1.type === 'english' && card2.type === 'polish' && card1.word === card2.match) ||
+                    (card1.type === 'polish' && card2.type === 'english' && card1.word === card2.match)) {
+                    // Para znaleziona
+                    setTimeout(() => {
+                        card1.isMatched = true;
+                        card2.isMatched = true;
+                        
+                        // Podświetl dopasowanie
+                        card1.back.setFillStyle(0x00cc00);
+                        card2.back.setFillStyle(0x00cc00);
+                        
+                        matchedPairs++;
+                        scoreText.setText(`Pary: ${matchedPairs}/${totalPairs}`);
+                        
+                        // Sprawdź, czy wszystkie pary zostały znalezione
+                        if (matchedPairs === totalPairs) {
+                            gameCompleted.call(this);
+                        }
+                        
+                        selectedCards = [];
+                        canSelect = true;
+                    }, 500);
+                } else {
+                    // Brak dopasowania
+                    setTimeout(() => {
+                        flipCard(card1, false);
+                        flipCard(card2, false);
+                        selectedCards = [];
+                        canSelect = true;
+                    }, 1000);
+                }
+            }
+        }
+        
+        function flipCard(card, isFlipped) {
+            card.isFlipped = isFlipped;
+            
+            if (isFlipped) {
+                // Karta odwrócona - jaśniejsze niebieskie tło
+                card.back.setFillStyle(0x99aaff);
+                card.text.setVisible(true);
+            } else {
+                // Karta zakryta - ciemniejszy niebieski kolor
+                card.back.setFillStyle(0x6666ff);
+                card.text.setVisible(false);
+            }
+        }
+        
+        function gameCompleted() {
+            // Zatrzymaj odliczanie czasu
+            clearInterval(gameTimer);
+            const finalTime = timeElapsed;
+            
+            // Sprawdź, czy to nowy najlepszy czas
+            if (finalTime < bestTimes[currentCategory]) {
+                bestTimes[currentCategory] = finalTime;
+                localStorage.setItem(`bestTime_${currentCategory}`, finalTime);
+                bestTimeText.setText(`Najlepszy czas: ${finalTime} s`);
+            }
+            
+            // Półprzezroczysty czarny overlay
+            const overlay = this.add.rectangle(config.width/2, config.height/2, 
+                config.width, config.height, 0x000000, 0.7);
+            
+            // Pokaż komunikat o wygranej
+            const victoryText = this.add.text(config.width/2, config.height/2 - 40, 
+                `Gratulacje!\nWszystkie pary znalezione!\nCzas: ${finalTime} sekund`, { 
+                fontFamily: 'Arial', 
+                fontSize: '32px', 
+                fill: '#ffffff',
+                align: 'center'
+            });
+            victoryText.setOrigin(0.5);
+            
+            // Dodaj przycisk "Zagraj ponownie"
+            const playAgainBtn = this.add.rectangle(config.width/2, config.height/2 + 70, 200, 50, 0x4CAF50);
+            const playAgainText = this.add.text(config.width/2, config.height/2 + 70, 
+                'Zagraj ponownie', { 
+                fontFamily: 'Arial', 
+                fontSize: '20px', 
+                fill: '#ffffff'
+            });
+            playAgainText.setOrigin(0.5);
+            
+            playAgainBtn.setInteractive();
+            playAgainBtn.on('pointerdown', () => {
+                victoryText.destroy();
+                playAgainText.destroy();
+                playAgainBtn.destroy();
+                overlay.destroy();
+                resetGame.call(this);
+                startGame.call(this, currentCategory);
+            });
+        }
+        
+        function resetGame() {
+            // Zatrzymaj timer
+            if (gameTimer) {
+                clearInterval(gameTimer);
+            }
+            
+            // Usuń wszystkie karty
+            for (let card of cards) {
+                if (card.back) card.back.destroy();
+                if (card.text) card.text.destroy();
+                if (card.rect) card.rect.destroy();
+            }
+            
+            // Usuń elementy interfejsu
+            if (scoreText) scoreText.destroy();
+            if (timerText) timerText.destroy();
+            if (bestTimeText) bestTimeText.destroy();
+            if (categoryText) categoryText.destroy();
+            
+            cards = [];
+            selectedCards = [];
+            matchedPairs = 0;
+            timeElapsed = 0;
+        }
+        
+        // Funkcja do tasowania tablicy
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+    </script>
+</body>
+</html>
