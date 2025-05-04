@@ -3,555 +3,399 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>vocabulary-game</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.55.2/phaser.min.js"></script>
+    <title>Rejestrator Ekranu HD</title>
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
         }
-        #game-container {
-            margin: 0 auto;
-            width: 800px;
-            height: 600px;
-        }
-        .category-btn {
-            margin: 5px;
-            padding: 10px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .category-btn:hover {
-            background-color: #45a049;
-        }
-        .category-btn.active {
-            background-color: #2E7D32;
-            box-shadow: 0 0 5px rgba(0,0,0,0.3);
-        }
-        #category-selector {
-            margin-bottom: 10px;
+        h1, h2, h3 {
+            color: #333;
             text-align: center;
         }
-        h1 {
-            margin-top: 20px;
-            color: #333;
+        .video-container {
+            position: relative;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 1280px;
+        }
+        video {
+            width: 100%;
+            max-width: 1920px;
+            background-color: #000;
+            border-radius: 8px;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3367d6;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .settings {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        .setting-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        select, input[type="checkbox"] {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .status {
+            margin-top: 10px;
+            font-weight: bold;
+            color: #4285f4;
+        }
+        .error {
+            color: #d32f2f;
+            margin: 10px 0;
+        }
+        .download-container {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        .download-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #0f9d58;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .download-link:hover {
+            background-color: #0b8043;
+        }
+        .info {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #666;
         }
     </style>
 </head>
 <body>
-    <h1>vocabulary-game</h1>
-    <div id="category-selector">
-        <button class="category-btn active" id="family">Rodzina i przyjaciele</button>
-        <button class="category-btn" id="problems">Problemy i konflikty</button>
-        <button class="category-btn" id="relationships">Związki</button>
-        <button class="category-btn" id="all">Wszystkie słówka</button>
+    <div class="container">
+        <h1>Rejestrator Ekranu HD</h1>
+        
+        <div class="settings">
+            <div class="setting-group">
+                <label for="screenSource">Źródło do nagrywania:</label>
+                <select id="screenSource">
+                    <option value="screen">Cały ekran</option>
+                    <option value="window">Wybrane okno</option>
+                    <option value="tab">Bieżąca karta</option>
+                </select>
+            </div>
+            
+            <div class="setting-group">
+                <label for="resolution">Rozdzielczość nagrywania:</label>
+                <select id="resolution">
+                    <option value="1920,1080">Full HD (1920x1080)</option>
+                    <option value="3840,2160">UHD/4K (3840x2160)</option>
+                    <option value="1280,720">HD (1280x720)</option>
+                </select>
+            </div>
+            
+            <div class="setting-group">
+                <label for="frameRate">Liczba klatek na sekundę:</label>
+                <select id="frameRate">
+                    <option value="60">60 FPS</option>
+                    <option value="30" selected>30 FPS</option>
+                </select>
+            </div>
+            
+            <div class="setting-group">
+                <label for="audioCaptureCheckbox">
+                    <input type="checkbox" id="audioCaptureCheckbox" checked>
+                    Nagrywaj także dźwięk systemowy
+                </label>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="startBtn">Rozpocznij nagrywanie</button>
+            <button id="stopBtn" disabled>Zatrzymaj nagrywanie</button>
+        </div>
+        
+        <div class="status" id="status">Gotowy do nagrywania</div>
+        <div class="error" id="errorMsg"></div>
+        
+        <div class="video-container" style="display: none;" id="previewContainer">
+            <h3>Podgląd nagrania</h3>
+            <video id="preview" controls></video>
+        </div>
+        
+        <div class="download-container" id="downloadContainer" style="display: none;">
+            <h3>Nagranie gotowe</h3>
+            <div id="videoInfo" class="info"></div>
+            <a id="downloadLink" class="download-link" href="#" download="nagranie-ekranu.webm">Pobierz nagranie</a>
+        </div>
     </div>
-    <div id="game-container"></div>
 
     <script>
-        // Dane słówek podzielone na kategorie
-        const vocabularyData = {
-            family: [
-                { english: "best mate", polish: "najlepszy przyjaciel" },
-                { english: "brother-in-law", polish: "szwagier" },
-                { english: "classmate", polish: "kolega/koleżanka z klasy" },
-                { english: "colleague", polish: "kolega/znajomy" },
-                { english: "daughter-in-law", polish: "synowa" },
-                { english: "father-in-law", polish: "teść" },
-                { english: "flatmate", polish: "współlokator/współlokatorka" },
-                { english: "mother-in-law", polish: "teściowa" },
-                { english: "neighbour", polish: "sąsiad/sąsiadka" },
-                { english: "nephew", polish: "bratanek/siostrzeniec" },
-                { english: "niece", polish: "bratanica/siostrzenica" },
-                { english: "only child", polish: "jedynak/jedynaczka" },
-                { english: "sister-in-law", polish: "bratowa/szwagierka" },
-                { english: "son-in-law", polish: "zięć" },
-                { english: "teammate", polish: "kolega/koleżanka z zespołu" }
-            ],
-            problems: [
-                { english: "apologise (to someone)", polish: "przeprosić (kogoś)" },
-                { english: "fall out (with someone)", polish: "pokłócić się (z kimś)" },
-                { english: "forgive (someone)", polish: "wybaczyć (komuś)" },
-                { english: "talk behind (someone's) back", polish: "obgadywać (kogoś)" },
-                { english: "upset (someone)", polish: "zdenerwować (kogoś)" }
-            ],
-            relationships: [
-                { english: "ask someone out", polish: "zaprosić kogoś na randkę" },
-                { english: "break up (with someone)", polish: "zerwać (z kimś)" },
-                { english: "bride", polish: "panna młoda" },
-                { english: "cheat on someone", polish: "zdradzać kogoś" },
-                { english: "ex-boyfriend", polish: "były chłopak" },
-                { english: "ex-girlfriend", polish: "była dziewczyna" },
-                { english: "get on well (with someone)", polish: "dobrze się dogadywać (z kimś)" },
-                { english: "go on a date", polish: "iść na randkę" },
-                { english: "go out with someone", polish: "chodzić z kimś, być z kimś w związku" },
-                { english: "groom", polish: "pan młody" },
-                { english: "honeymoon", polish: "miesiąc miodowy" },
-                { english: "stepbrother", polish: "przybrany brat" },
-                { english: "stepdad", polish: "ojczym" },
-                { english: "stepmum", polish: "macocha" },
-                { english: "stepsister", polish: "przybrana siostra" },
-                { english: "wedding", polish: "ślub, wesele" }
-            ]
-        };
-
-        // Aktualnie wybrane słówka
-        let currentVocabulary = [];
-        let currentCategory = "family";
-
-        // Konfiguracja gry
-        const config = {
-            type: Phaser.AUTO,
-            width: 800,
-            height: 600,
-            backgroundColor: '#f8f8f8',
-            parent: 'game-container',
-            scene: {
-                create: create,
-                update: update
-            }
-        };
-
-        // Inicjalizacja gry
-        let game = new Phaser.Game(config);
-        
         // Zmienne globalne
-        let cards = [];
-        let selectedCards = [];
-        let matchedPairs = 0;
-        let totalPairs = 0;
-        let canSelect = true;
-        let scoreText;
-        let timerText;
-        let timeElapsed = 0;
-        let gameTimer;
-        let gameStartTime;
-        let bestTimeText;
-        let categoryText;
-        let bestTimes = {
-            family: localStorage.getItem('bestTime_family') || Infinity,
-            problems: localStorage.getItem('bestTime_problems') || Infinity,
-            relationships: localStorage.getItem('bestTime_relationships') || Infinity,
-            all: localStorage.getItem('bestTime_all') || Infinity
-        };
-
-        function create() {
-            // Rozpocznij grę z domyślną kategorią
-            startGame.call(this, currentCategory);
-            
-            // Podświetl aktywny przycisk kategorii
-            highlightActiveCategory(currentCategory);
-            
-            // Dodaj obsługę przycisków kategorii
-            document.getElementById('family').addEventListener('click', () => {
-                currentCategory = 'family';
-                highlightActiveCategory(currentCategory);
-                resetGame.call(this);
-                startGame.call(this, 'family');
-            });
-            
-            document.getElementById('problems').addEventListener('click', () => {
-                currentCategory = 'problems';
-                highlightActiveCategory(currentCategory);
-                resetGame.call(this);
-                startGame.call(this, 'problems');
-            });
-            
-            document.getElementById('relationships').addEventListener('click', () => {
-                currentCategory = 'relationships';
-                highlightActiveCategory(currentCategory);
-                resetGame.call(this);
-                startGame.call(this, 'relationships');
-            });
-            
-            document.getElementById('all').addEventListener('click', () => {
-                currentCategory = 'all';
-                highlightActiveCategory(currentCategory);
-                resetGame.call(this);
-                startGame.call(this, 'all');
-            });
-        }
-
-        function highlightActiveCategory(category) {
-            // Usuń klasę active ze wszystkich przycisków
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Dodaj klasę active do aktywnego przycisku
-            document.getElementById(category).classList.add('active');
-        }
-
-        function update() {
-            // Pusta funkcja - teraz używamy setTimeout do zarządzania czasem
-        }
-
-        function startGame(category) {
-            // Ustawienie aktualnej kategorii słówek
-            if (category === 'all') {
-                currentVocabulary = [
-                    ...vocabularyData.family,
-                    ...vocabularyData.problems,
-                    ...vocabularyData.relationships
-                ];
-            } else {
-                currentVocabulary = vocabularyData[category];
-            }
-            
-            // Losowe wybranie słówek (maksymalnie 8 par)
-            let selectedVocabulary = currentVocabulary.slice();
-            if (selectedVocabulary.length > 8) {
-                // Losowo wybierz 8 elementów
-                selectedVocabulary = shuffleArray(selectedVocabulary).slice(0, 8);
-            }
-            
-            // Tworzenie kart
-            createCards.call(this, selectedVocabulary);
-            
-            // Inicjalizacja licznika czasu
-            timeElapsed = 0;
-            gameStartTime = Date.now();
-            
-            // Anuluj poprzedni timer jeśli istnieje
-            if (gameTimer) {
-                clearInterval(gameTimer);
-            }
-            
-            // Ustaw nowy timer aktualizujący czas co sekundę
-            gameTimer = setInterval(() => {
-                timeElapsed = Math.floor((Date.now() - gameStartTime) / 1000);
-                if (timerText) {
-                    timerText.setText(`Czas: ${timeElapsed} s`);
-                }
-            }, 1000);
-            
-            // Dodaj tekst wyniku
-            if (scoreText) {
-                scoreText.destroy();
-            }
-            scoreText = this.add.text(20, 20, `Pary: 0/${totalPairs}`, { 
-                fontFamily: 'Arial', 
-                fontSize: '24px', 
-                fill: '#000' 
-            });
-            
-            // Dodaj tekst czasu
-            if (timerText) {
-                timerText.destroy();
-            }
-            timerText = this.add.text(20, 50, 'Czas: 0 s', { 
-                fontFamily: 'Arial', 
-                fontSize: '24px', 
-                fill: '#000' 
-            });
-            
-            // Dodaj tekst najlepszego czasu
-            if (bestTimeText) {
-                bestTimeText.destroy();
-            }
-            
-            const bestTime = bestTimes[category];
-            bestTimeText = this.add.text(20, 80, `Najlepszy czas: ${bestTime !== "Infinity" && bestTime !== Infinity ? bestTime + ' s' : '---'}`, { 
-                fontFamily: 'Arial', 
-                fontSize: '24px', 
-                fill: '#0066cc' 
-            });
-
-            // Dodaj nazwę kategorii
-            if (categoryText) {
-                categoryText.destroy();
-            }
-            
-            let categoryName;
-            switch(category) {
-                case 'family': categoryName = 'Rodzina i przyjaciele'; break;
-                case 'problems': categoryName = 'Problemy i konflikty'; break;
-                case 'relationships': categoryName = 'Związki'; break;
-                case 'all': categoryName = 'Wszystkie słówka'; break;
-            }
-            
-            categoryText = this.add.text(config.width - 20, 20, categoryName, {
-                fontFamily: 'Arial',
-                fontSize: '20px',
-                fill: '#333'
-            });
-            categoryText.setOrigin(1, 0);
-        }
+        let mediaRecorder;
+        let recordedChunks = [];
+        let stream;
+        let startTime;
         
-        function createCards(vocabulary) {
-            // Usuń istniejące karty
-            for (let card of cards) {
-                if (card.back) card.back.destroy();
-                if (card.text) card.text.destroy();
-                if (card.rect) card.rect.destroy();
-            }
-            cards = [];
-            selectedCards = [];
-            matchedPairs = 0;
-            
-            // Stwórz pary kart (angielskie i polskie)
-            let cardPairs = [];
-            for (let item of vocabulary) {
-                cardPairs.push({
-                    word: item.english,
-                    type: 'english',
-                    match: item.polish
-                });
-                cardPairs.push({
-                    word: item.polish,
-                    type: 'polish',
-                    match: item.english
-                });
-            }
-            
-            // Potasuj karty
-            cardPairs = shuffleArray(cardPairs);
-            totalPairs = vocabulary.length;
-            
-            // Dopasuj układ kart do liczby par
-            let cardWidth, cardHeight, cardsPerRow;
-            
-            // Dynamiczne dostosowanie rozmiaru kart
-            if (cardPairs.length <= 8) {
-                cardWidth = 180;
-                cardHeight = 100;
-                cardsPerRow = 4;
-            } else if (cardPairs.length <= 12) {
-                cardWidth = 170;
-                cardHeight = 90;
-                cardsPerRow = 4;
-            } else if (cardPairs.length <= 16) {
-                cardWidth = 160;
-                cardHeight = 85;
-                cardsPerRow = 4;
-            } else {
-                cardWidth = 150;
-                cardHeight = 80;
-                cardsPerRow = 5;
-            }
-            
-            const cardSpacingX = 10;
-            const cardSpacingY = 15;
-            const rows = Math.ceil(cardPairs.length / cardsPerRow);
-            
-            // Wyśrodkuj siatkę kart
-            const gridWidth = cardsPerRow * cardWidth + (cardsPerRow - 1) * cardSpacingX;
-            const startX = (config.width - gridWidth) / 2 + cardWidth / 2;
-            const startY = 150;
-            
-            // Stwórz karty
-            for (let i = 0; i < cardPairs.length; i++) {
-                const row = Math.floor(i / cardsPerRow);
-                const col = i % cardsPerRow;
-                const x = startX + col * (cardWidth + cardSpacingX);
-                const y = startY + row * (cardHeight + cardSpacingY);
-                
-                // Tło karty (prostokąt)
-                const cardBack = this.add.rectangle(x, y, cardWidth, cardHeight, 0x6666ff);
-                cardBack.setInteractive();
-                
-                // Biała ramka dla lepszego wyglądu
-                const cardRect = this.add.rectangle(x, y, cardWidth - 4, cardHeight - 4, 0xffffff);
-                
-                // Tekst na karcie (początkowo ukryty)
-                let fontSize = '16px';
-                if (cardPairs[i].word.length > 25) {
-                    fontSize = '14px';
-                }
-                if (cardPairs[i].word.length > 35) {
-                    fontSize = '12px';
-                }
-                
-                const cardText = this.add.text(x, y, cardPairs[i].word, {
-                    fontFamily: 'Arial',
-                    fontSize: fontSize,
-                    fill: '#000',
-                    wordWrap: { width: cardWidth - 20 },
-                    align: 'center'
-                });
-                cardText.setOrigin(0.5);
-                cardText.setVisible(false);
-                
-                // Dodaj kartę do tablicy kart
-                cards.push({
-                    back: cardBack,
-                    rect: cardRect,
-                    text: cardText,
-                    word: cardPairs[i].word,
-                    type: cardPairs[i].type,
-                    match: cardPairs[i].match,
-                    isFlipped: false,
-                    isMatched: false
-                });
-                
-                // Obsługa kliknięcia karty
-                cardBack.on('pointerdown', function() {
-                    clickCard.call(this.scene, i);
-                });
-            }
-        }
+        // Elementy DOM
+        const startButton = document.getElementById('startBtn');
+        const stopButton = document.getElementById('stopBtn');
+        const screenSourceSelect = document.getElementById('screenSource');
+        const resolutionSelect = document.getElementById('resolution');
+        const frameRateSelect = document.getElementById('frameRate');
+        const audioCaptureCheckbox = document.getElementById('audioCaptureCheckbox');
+        const statusElement = document.getElementById('status');
+        const errorElement = document.getElementById('errorMsg');
+        const downloadContainer = document.getElementById('downloadContainer');
+        const downloadLink = document.getElementById('downloadLink');
+        const videoInfo = document.getElementById('videoInfo');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewVideo = document.getElementById('preview');
         
-        function clickCard(index) {
-            const card = cards[index];
-            
-            // Sprawdź, czy można wybrać kartę
-            if (!canSelect || card.isFlipped || card.isMatched) {
+        // Inicjalizacja po załadowaniu strony
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sprawdź obsługę nagrywania ekranu w przeglądarce
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+                showError('Twoja przeglądarka nie obsługuje nagrywania ekranu. Użyj Chrome, Firefox lub Edge w najnowszej wersji.');
+                startButton.disabled = true;
                 return;
             }
             
-            // Odwróć kartę
-            flipCard(card, true);
+            // Przypisz obsługę zdarzeń do przycisków
+            startButton.addEventListener('click', startRecording);
+            stopButton.addEventListener('click', stopRecording);
             
-            // Dodaj kartę do wybranych
-            selectedCards.push(card);
-            
-            // Jeśli wybrano dwie karty, sprawdź dopasowanie
-            if (selectedCards.length === 2) {
-                canSelect = false;
+            // Wyświetl powiadomienie o gotowości
+            statusElement.textContent = 'Gotowy do nagrywania ekranu';
+        });
+
+        // Rozpocznij nagrywanie ekranu
+        async function startRecording() {
+            try {
+                // Resetuj zmienne
+                recordedChunks = [];
+                startTime = Date.now();
                 
-                const card1 = selectedCards[0];
-                const card2 = selectedCards[1];
+                // Pobierz aktualne ustawienia
+                const screenSource = screenSourceSelect.value;
+                const [width, height] = resolutionSelect.value.split(',').map(Number);
+                const frameRate = parseInt(frameRateSelect.value);
+                const captureAudio = audioCaptureCheckbox.checked;
                 
-                // Sprawdź, czy karty tworzą parę
-                if ((card1.type === 'english' && card2.type === 'polish' && card1.word === card2.match) ||
-                    (card1.type === 'polish' && card2.type === 'english' && card1.word === card2.match)) {
-                    // Para znaleziona
-                    setTimeout(() => {
-                        card1.isMatched = true;
-                        card2.isMatched = true;
-                        
-                        // Podświetl dopasowanie
-                        card1.back.setFillStyle(0x00cc00);
-                        card2.back.setFillStyle(0x00cc00);
-                        
-                        matchedPairs++;
-                        scoreText.setText(`Pary: ${matchedPairs}/${totalPairs}`);
-                        
-                        // Sprawdź, czy wszystkie pary zostały znalezione
-                        if (matchedPairs === totalPairs) {
-                            gameCompleted.call(this);
-                        }
-                        
-                        selectedCards = [];
-                        canSelect = true;
-                    }, 500);
-                } else {
-                    // Brak dopasowania
-                    setTimeout(() => {
-                        flipCard(card1, false);
-                        flipCard(card2, false);
-                        selectedCards = [];
-                        canSelect = true;
-                    }, 1000);
+                // Konfiguracja ograniczeń dla nagrywania ekranu
+                const displayMediaOptions = {
+                    video: {
+                        displaySurface: screenSource,
+                        logicalSurface: true,
+                        cursor: 'always'
+                    },
+                    audio: captureAudio,
+                    surfaceSwitching: 'include',
+                    selfBrowserSurface: 'include'
+                };
+                
+                // Pobierz strumień z ekranu
+                stream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+                
+                // Utwórz rejestrator z bezpiecznym formatem
+                // Najpierw sprawdź, jakie formaty są obsługiwane
+                const mimeTypes = [
+                    'video/webm',
+                    'video/webm;codecs=vp8',
+                    'video/webm;codecs=vp9',
+                    'video/webm;codecs=h264',
+                    'video/mp4'
+                ];
+                
+                let options = { mimeType: '' };
+                
+                // Znajdź pierwszy obsługiwany format
+                for (const mimeType of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(mimeType)) {
+                        options.mimeType = mimeType;
+                        break;
+                    }
+                }
+                
+                // Jeśli żaden format nie jest obsługiwany, użyj domyślnego
+                if (!options.mimeType) {
+                    options = {};
+                }
+                
+                // Utwórz rejestrator
+                mediaRecorder = new MediaRecorder(stream, options);
+                
+                // Obsługa danych
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+                
+                // Obsługa zakończenia nagrywania
+                mediaRecorder.onstop = handleRecordingComplete;
+                
+                // Obsługa błędów
+                mediaRecorder.onerror = (event) => {
+                    showError('Błąd nagrywania: ' + event.error);
+                };
+                
+                // Obsługa anulowania wyboru ekranu przez użytkownika
+                stream.getVideoTracks()[0].onended = () => {
+                    stopRecording();
+                };
+                
+                // Rozpocznij nagrywanie
+                mediaRecorder.start(1000); // Pobieraj dane co sekundę
+                
+                // Aktualizuj interfejs
+                startButton.disabled = true;
+                stopButton.disabled = false;
+                statusElement.textContent = 'Nagrywanie ekranu...';
+                
+                // Wyczyść błędy
+                errorElement.textContent = '';
+                
+                // Ukryj poprzednie wyniki
+                downloadContainer.style.display = 'none';
+                previewContainer.style.display = 'none';
+                
+                // Aktualizuj czas nagrywania
+                updateRecordingTimer();
+                
+            } catch (error) {
+                // Wyświetl błąd, jeśli wystąpił problem (np. użytkownik anulował wybór ekranu)
+                showError('Błąd podczas rozpoczynania nagrywania: ' + error.message);
+                startButton.disabled = false;
+                stopButton.disabled = true;
+            }
+        }
+
+        // Zatrzymaj nagrywanie
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                stopButton.disabled = true;
+                statusElement.textContent = 'Przetwarzanie nagrania...';
+                
+                // Zatrzymaj wszystkie ścieżki
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
                 }
             }
         }
-        
-        function flipCard(card, isFlipped) {
-            card.isFlipped = isFlipped;
-            
-            if (isFlipped) {
-                // Karta odwrócona - jaśniejsze niebieskie tło
-                card.back.setFillStyle(0x99aaff);
-                card.text.setVisible(true);
-            } else {
-                // Karta zakryta - ciemniejszy niebieski kolor
-                card.back.setFillStyle(0x6666ff);
-                card.text.setVisible(false);
+
+        // Obsługa zakończenia nagrywania
+        function handleRecordingComplete() {
+            try {
+                // Określenie typu MIME
+                const mimeType = mediaRecorder.mimeType || 'video/webm';
+                
+                // Utwórz blob z nagranych danych
+                const blob = new Blob(recordedChunks, { type: mimeType });
+                
+                // Utwórz URL dla pliku
+                const url = URL.createObjectURL(blob);
+                
+                // Przygotuj podgląd i link do pobrania
+                previewVideo.src = url;
+                downloadLink.href = url;
+                
+                // Generuj nazwę pliku z datą
+                const now = new Date();
+                const fileName = `nagranie-ekranu_${now.toISOString().replace(/[:.]/g, '-')}${mimeType.includes('mp4') ? '.mp4' : '.webm'}`;
+                downloadLink.download = fileName;
+                
+                // Wyświetl informacje o pliku
+                const fileSizeMB = (blob.size / (1024 * 1024)).toFixed(2);
+                const durationSeconds = Math.round((Date.now() - startTime) / 1000);
+                
+                videoInfo.textContent = `Rozmiar pliku: ${fileSizeMB} MB | Długość: ${formatTime(durationSeconds)} | Format: ${mimeType}`;
+                
+                // Pokaż container do pobrania i podglądu
+                downloadContainer.style.display = 'block';
+                previewContainer.style.display = 'block';
+                
+                // Przywróć przyciski
+                startButton.disabled = false;
+                statusElement.textContent = 'Nagrywanie zakończone. Możesz pobrać plik lub odtworzyć podgląd.';
+                
+            } catch (error) {
+                showError('Błąd podczas finalizowania nagrania: ' + error.message);
+                startButton.disabled = false;
             }
         }
-        
-        function gameCompleted() {
-            // Zatrzymaj odliczanie czasu
-            clearInterval(gameTimer);
-            const finalTime = timeElapsed;
-            
-            // Sprawdź, czy to nowy najlepszy czas
-            if (finalTime < bestTimes[currentCategory]) {
-                bestTimes[currentCategory] = finalTime;
-                localStorage.setItem(`bestTime_${currentCategory}`, finalTime);
-                bestTimeText.setText(`Najlepszy czas: ${finalTime} s`);
+
+        // Aktualizuj timer nagrywania
+        function updateRecordingTimer() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                const durationSeconds = Math.round((Date.now() - startTime) / 1000);
+                statusElement.textContent = `Nagrywanie: ${formatTime(durationSeconds)}`;
+                setTimeout(updateRecordingTimer, 1000);
             }
-            
-            // Półprzezroczysty czarny overlay
-            const overlay = this.add.rectangle(config.width/2, config.height/2, 
-                config.width, config.height, 0x000000, 0.7);
-            
-            // Pokaż komunikat o wygranej
-            const victoryText = this.add.text(config.width/2, config.height/2 - 40, 
-                `Gratulacje!\nWszystkie pary znalezione!\nCzas: ${finalTime} sekund`, { 
-                fontFamily: 'Arial', 
-                fontSize: '32px', 
-                fill: '#ffffff',
-                align: 'center'
-            });
-            victoryText.setOrigin(0.5);
-            
-            // Dodaj przycisk "Zagraj ponownie"
-            const playAgainBtn = this.add.rectangle(config.width/2, config.height/2 + 70, 200, 50, 0x4CAF50);
-            const playAgainText = this.add.text(config.width/2, config.height/2 + 70, 
-                'Zagraj ponownie', { 
-                fontFamily: 'Arial', 
-                fontSize: '20px', 
-                fill: '#ffffff'
-            });
-            playAgainText.setOrigin(0.5);
-            
-            playAgainBtn.setInteractive();
-            playAgainBtn.on('pointerdown', () => {
-                victoryText.destroy();
-                playAgainText.destroy();
-                playAgainBtn.destroy();
-                overlay.destroy();
-                resetGame.call(this);
-                startGame.call(this, currentCategory);
-            });
         }
-        
-        function resetGame() {
-            // Zatrzymaj timer
-            if (gameTimer) {
-                clearInterval(gameTimer);
-            }
-            
-            // Usuń wszystkie karty
-            for (let card of cards) {
-                if (card.back) card.back.destroy();
-                if (card.text) card.text.destroy();
-                if (card.rect) card.rect.destroy();
-            }
-            
-            // Usuń elementy interfejsu
-            if (scoreText) scoreText.destroy();
-            if (timerText) timerText.destroy();
-            if (bestTimeText) bestTimeText.destroy();
-            if (categoryText) categoryText.destroy();
-            
-            cards = [];
-            selectedCards = [];
-            matchedPairs = 0;
-            timeElapsed = 0;
+
+        // Formatuj czas
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
         }
-        
-        // Funkcja do tasowania tablicy
-        function shuffleArray(array) {
-            const newArray = [...array];
-            for (let i = newArray.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-            }
-            return newArray;
+
+        // Wyświetl błąd
+        function showError(message) {
+            errorElement.textContent = message;
+            console.error(message);
         }
     </script>
 </body>
